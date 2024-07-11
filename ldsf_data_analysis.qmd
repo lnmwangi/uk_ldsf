@@ -1,0 +1,91 @@
+---
+title: "Untitled"
+format: html
+---
+
+```{r}
+1+1
+```
+##introduction
+This document is a notebook with documentation and code for LDSF data analysis workshop in Voi(July)
+
+```{r}
+install.packages(c("dplyr","ggplot2", "leaflet"))
+```
+
+##load the packages that we will 
+
+```{r}
+library(dplyr)#for grouping
+library(ggplot2)
+library(leaflet)
+library(sf)
+```
+
+##load the LDSF data into R
+
+
+```{r}
+table_ldsf <- read.csv("data/ldsf_data_uk-pact.csv")
+
+
+head(table_ldsf)
+names(table_ldsf)
+
+```
+
+```{r}
+table_ldsf |>
+group_by (site) |>
+summarise(count = n()) |>
+ggplot() +
+geom_col(aes(x = site, y = count,fill = site)) + ggtitle("Number of plots per site") + theme(legend.position = "false")
+
+ggsave("plots/plots per sites.png")
+```
+
+```{r}
+table_ldsf |> 
+  filter(site =="chawia") |>#selecting one site
+    group_by (site, vegstructure) |>
+summarise(count = n())
+```
+
+
+##grouping by vegetation structure
+```{r}
+table_ldsf |>
+  group_by(site,vegstructure) |>
+  summarise(count = n()) |>
+  ggplot() + geom_col(aes(x=site, y=count,fill=vegstructure))+ ggtitle("vegstructure in each site")+
+theme(text = element_text(size=34)) + theme(legend.position = "right")
+
+ggsave("vegstructure.png")
+
+
+```
+##table development
+
+
+###lets create a map of the ldsf sites
+```{r}
+table_ldsf |>
+  leaflet() |>
+  addTiles() |>
+  addCircleMarkers(lng=~longitude, lat = ~latitude, radius = 1,group="LDSF")
+
+```
+
+```{r}
+ken_admin <- st_read("data/shp/ken_adm_iebc_20191031_shp/ken_admbnda_adm2_iebc_20191031.shp")
+
+
+```
+```{r}
+ken_admin |>
+filter(ADM2_EN =="Taveta") |>
+leaflet() |>
+addTiles() |>
+addpolygonos(fill = TRUE, fillcolor = "red", fillOpacity = 0.3, weight 0.5)
+
+```

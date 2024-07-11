@@ -1,0 +1,93 @@
+---
+title: "ldsf_soil analysis"
+format: html
+---
+###load libraries
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+```
+
+
+
+##load the LDSF data into R
+
+```{r}
+table_soil <- read.csv("data/ldsf_soil_kalamba_lumo.csv")
+
+
+head(table_soil)
+names(table_soil)
+str(table_soil)
+```
+  
+##grouping
+
+```{r}
+table_soil |>
+group_by (site) |>
+summarise(count = n()) |>
+ggplot() +
+geom_col(aes(x = site, y = count,fill = site)) + ggtitle("Number soil plots per site") + theme(legend.position = "false")+
+theme(text = element_text(size=34))
+
+
+
+```
+
+
+##boxplot for PH in sites
+
+```{r}
+table_soil |> 
+  ggplot() + 
+  geom_boxplot(aes(x=site, y=predpH, fill = site)) + theme(legend.position = "false") +
+theme(text = element_text(size=34)) + scale_fill_manual(values=c("darkblue", "darkred")) + ggtitle("pH values")+facet_wrap(~depthcode)
+  
+```
+
+
+#### Plot the distribution of pH across sites facet by depth
+```{r}
+table_ldsf |> # Pipe the dataset into the next function
+filter(depthcode =="topsoil"|depthcode =="subsoil") |>
+  ggplot(aes(site, predpH, fill = site))+ # Initialize a ggplot with 'site' on the x-axis and 'predpH' on the y-axis, with 'site' as the fill color
+  geom_boxplot(show.legend = F, width = 0.5, alpha = 0.8)+ # Add a boxplot geometry, hide the legend, set the box width, and adjust transparency
+  facet_wrap(~depthcode, ncol = 2) + # Create a faceted plot wrapping by 'depthcode', with 2 columns per row
+  theme(text = element_text(size=34))
+```
+
+##Plot the average pH across sites
+```{r}
+table_ldsf |> # Pipe the dataset into the next function
+  group_by(site) |> # Group the data by 'site'
+  summarise(avg_ph = mean(predpH)) |> # Summarize the data to calculate the average 'predpH' for each site
+  ggplot(aes(reorder(site, -avg_ph), avg_ph, fill = site))+ # Initialize a ggplot with reordered 'site' on the x-axis and 'avg_ph' on the y-axis, with 'site' as the fill color
+  geom_col(show.legend = F, width = 0.5, alpha = 0.8) + # Add a column geometry, hide the legend, set the column width, and adjust transparency
+   theme(text = element_text(size=34))
+```
+
+
+#### Create boxplots for Pred SOC
+```{r}
+ggplot(table_ldsf, aes(x = factor(site), y = predsoc, fill = site)) +
+  geom_boxplot() +
+  ggtitle("Boxplot of Pred SOC by Site") +
+  xlab("Site") +
+  ylab("Pred SOC") +
+  theme(legend.position = "none") + theme(text = element_text(size=34))
+
+
+```
+
+####### Plot the distribution of pred soc across sites facet by depth
+```{r}
+table_ldsf |> # Pipe the dataset into the next function
+filter(depthcode =="topsoil"|depthcode =="subsoil") |>
+  ggplot(aes(site, predsoc, fill = site))+ # Initialize a ggplot with 'site' on the x-axis and 'predpH' on the y-axis, with 'site' as the fill color
+  geom_boxplot(show.legend = F, width = 0.5, alpha = 0.8)+ # Add a boxplot geometry, hide the legend, set the box width, and adjust transparency
+  facet_wrap(~depthcode, ncol = 2) + # Create a faceted plot wrapping by 'depthcode', with 3 columns per row
+  theme(text = element_text(size=34))
+``` 
